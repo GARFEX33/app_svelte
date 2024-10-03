@@ -1,4 +1,4 @@
-// src/lib/repositories/SupabaseClienteRepository.ts
+
 
 import { addCliente, deleteCliente, fetchClientes, updateCliente } from "$lib/services/ClienteService";
 import type { Cliente, ClienteSupabase } from "$lib/types/Cliente";

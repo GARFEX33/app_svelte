@@ -1,4 +1,4 @@
-// src/lib/repositories/ClienteRepositoryFactory.ts
+
 
 import type { ClienteRepository } from "./ClienteRepository";
 import { SupabaseClienteRepository } from "./SupabaseClienteRepository";

@@ -1,68 +1,27 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { clientes, loadClientes, agregarCliente, actualizarCliente, eliminarCliente } from '$lib/stores/clienteStore';
-  import type { Cliente } from '$lib/types';
+  import TablaClientes from './componentes/ClientesTabla.svelte';
+  import {
+    nuevoNombre,
+    nuevaRazonSocial,
+    mostrarModal,
+    filtro,
+    clientesFiltrados,
+    formularioValido,
+    mensajeError,
+    cargarClientes,
+    iniciarEdicion,
+    handleAgregarCliente,
+    handleActualizarCliente,
+    handleEliminarCliente,
+    abrirModal,
+    cerrarModal,
+    editandoCliente
+  } from '$lib/logic/clientes/clientesLogic';
 
-  let nuevoCliente: string = '';
-  let nuevaRazonSocial: string = '';
-  let editandoCliente: Cliente | null = null;
-  let mostrarModal = false;
-  let filtro = '';
-
-  // Declarar como reactivo para que se actualice al cambiar `filtro` o `clientes`
-  $: clientesFiltrados = $clientes.filter(cliente =>
-    cliente.cliente.toLowerCase().includes(filtro.toLowerCase()) ||
-    cliente.razonsocial.toLowerCase().includes(filtro.toLowerCase())
-  );
-
-  onMount(() => {
-    loadClientes();
-  });
-
-  function iniciarEdicion(cliente: Cliente) {
-    editandoCliente = { ...cliente };
-    nuevoCliente = cliente.cliente;
-    nuevaRazonSocial = cliente.razonsocial;
-  }
-
-  async function handleActualizarCliente() {
-    if (editandoCliente) {
-      await actualizarCliente(editandoCliente.id, {
-        cliente: nuevoCliente,
-        razonsocial: nuevaRazonSocial,
-      });
-      editandoCliente = null;
-    }
-
-  }
-
-  async function handleEliminarCliente(id: number) {
-    await eliminarCliente(id);
-  }
-
-  async function handleAgregarCliente() {
-    console.log('Agregando cliente', nuevoCliente, nuevaRazonSocial);
-    await agregarCliente({ cliente: nuevoCliente, razonsocial: nuevaRazonSocial });
-    nuevoCliente = '';
-    nuevaRazonSocial = '';
-    mostrarModal = false; // Cierra el modal después de agregar
-  }
-
-  function abrirModal() {
-  // Limpiar los valores antes de abrir el modal
-  nuevoCliente = '';
-  nuevaRazonSocial = '';
-  mostrarModal = true;
-}
-
-  function cerrarModal() {
-  nuevoCliente = '';  // Limpiar el campo de "Cliente"
-  nuevaRazonSocial = '';  // Limpiar el campo de "Razón Social"
-  mostrarModal = false;  // Cierra el modal
-}
-
+  // Cargar los clientes al montar el componente
+  onMount(cargarClientes);
 </script>
-
 
 <!-- Botón para abrir el modal -->
 <div class="mb-4 flex justify-between items-center">
@@ -72,26 +31,51 @@
   <input
     type="text"
     placeholder="Buscar Cliente o Razón Social"
-    bind:value={filtro}
+    bind:value={$filtro}
     class="input input-bordered w-1/3"
   />
 </div>
 
-<!-- Modal para agregar cliente -->
-{#if mostrarModal}
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-    <div class="bg-white p-6 rounded shadow-lg">
-      <h2 class="text-xl font-bold mb-4">Agregar Nuevo Cliente</h2>
+<!-- Modal para agregar o editar cliente -->
+{#if $mostrarModal}
+  <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+    <div class="bg-white p-6 rounded shadow-lg z-50">
+      <h2 class="text-xl font-bold mb-4">{$editandoCliente ? 'Editar Cliente' : 'Agregar Nuevo Cliente'}</h2>
+
+      <!-- Mostrar mensaje de error si existe -->
+      {#if $mensajeError}
+        <div role="alert" class="text-sm text-red-600 mb-2 flex items-center">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4 shrink-0 stroke-current mr-1"
+            fill="none"
+            viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span>{$mensajeError}</span>
+        </div>
+      {/if}
+
       <div class="mb-4">
-        <label for="nuevoCliente" class="block text-sm font-medium text-gray-700">Cliente</label>
-        <input id="nuevoCliente" type="text" bind:value={nuevoCliente} class="input input-bordered w-full" />
+        <label for="nuevoNombre" class="block text-sm font-normal text-gray-700">Nombre del Cliente</label>
+        <input id="nuevoNombre" type="text" bind:value={$nuevoNombre} class="input input-bordered w-full" />
       </div>
+
       <div class="mb-4">
         <label for="nuevaRazonSocial" class="block text-sm font-medium text-gray-700">Razón Social</label>
-        <input id="nuevaRazonSocial" type="text" bind:value={nuevaRazonSocial} class="input input-bordered w-full" />
+        <input id="nuevaRazonSocial" type="text" bind:value={$nuevaRazonSocial} class="input input-bordered w-full" />
       </div>
+
       <div class="flex justify-end">
-        <button on:click={handleAgregarCliente} class="btn btn-primary mr-2">Agregar</button>
+        {#if $editandoCliente}
+          <button on:click={handleActualizarCliente} class="btn btn-primary mr-2" disabled={!$formularioValido}>Guardar</button>
+        {:else}
+          <button on:click={handleAgregarCliente} class="btn btn-primary mr-2" disabled={!$formularioValido}>Agregar</button>
+        {/if}
         <button on:click={cerrarModal} class="btn btn-secondary">Cancelar</button>
       </div>
     </div>
@@ -99,43 +83,8 @@
 {/if}
 
 <!-- Tabla de clientes -->
-<div class="overflow-x-auto mt-4">
-  <table class="table-auto w-full bg-white shadow-md rounded my-6">
-    <thead>
-      <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-        <th class="py-3 px-6 text-left">Cliente</th>
-        <th class="py-3 px-6 text-left">Razón Social</th>
-        <th class="py-3 px-6 text-center">Acciones</th>
-      </tr>
-    </thead>
-    <tbody class="text-gray-600 text-sm font-light">
-      {#each clientesFiltrados as cliente (cliente.id)}
-        <tr class="border-b border-gray-200 hover:bg-gray-100">
-          <td class="py-3 px-6 text-left whitespace-nowrap">
-            {#if editandoCliente && editandoCliente.id === cliente.id}
-              <input type="text" bind:value={nuevoCliente} class="input input-bordered w-full" />
-            {:else}
-              {cliente.cliente}
-            {/if}
-          </td>
-          <td class="py-3 px-6 text-left">
-            {#if editandoCliente && editandoCliente.id === cliente.id}
-              <input type="text" bind:value={nuevaRazonSocial} class="input input-bordered w-full" />
-            {:else}
-              {cliente.razonsocial}
-            {/if}
-          </td>
-          <td class="py-3 px-6 text-center">
-            {#if editandoCliente && editandoCliente.id === cliente.id}
-              <button on:click={handleActualizarCliente} class="btn btn-primary btn-sm">Guardar</button>
-              <button on:click={() => editandoCliente = null} class="btn btn-secondary btn-sm">Cancelar</button>
-            {:else}
-              <button on:click={() => iniciarEdicion(cliente)} class="btn btn-warning btn-sm">Editar</button>
-              <button on:click={() => handleEliminarCliente(cliente.id)} class="btn btn-danger btn-sm">Eliminar</button>
-            {/if}
-          </td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
-</div>
+<TablaClientes 
+  clientesFiltrados={$clientesFiltrados}
+  iniciarEdicion={iniciarEdicion}
+  handleEliminarCliente={handleEliminarCliente}
+/>

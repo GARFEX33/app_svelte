@@ -14,9 +14,9 @@
     <ul class="menu p-4 flex-grow">
       <li><a class="text-white" href="/dashboard">Inicio</a></li>
       <li><a class="text-white" href="/dashboard/clientes">Clientes</a></li>
-      <li><a class="text-white" href="/dashboard/option2">Opción 2</a></li>
-      <li><a class="text-white" href="/dashboard/option3">Opción 3</a></li>
-      <li><a class="text-white" href="/dashboard/settings">Configuración</a></li>
+      <li><a class="text-white" href="/dashboard/conceptos">Conceptos</a></li>
+      <li><a class="text-white" href="/dashboard/precios-unitarios">Costos Unitarios</a></li>
+      <li><a class="text-white" href="/dashboard/proyectos">Proyectos</a></li>
     </ul>
     <div class="p-4">
       <button class="btn btn-primary w-full"  on:click={logoutPage}>Cerrar Sesión</button>

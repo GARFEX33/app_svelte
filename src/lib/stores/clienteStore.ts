@@ -1,6 +1,5 @@
 // src/lib/stores/clienteStore.ts
 import { writable } from 'svelte/store';
-
 import type { Cliente } from '$lib/types';
 import { createClienteRepository } from '$lib/repositories/clientes/ClienteRepositoryFactory';
 
@@ -10,17 +9,18 @@ const clienteRepository = createClienteRepository();
 // Store para mantener la lista de clientes
 export const clientes = writable<Cliente[]>([]);
 
-export async function loadClientes(): Promise<void> {
+export async function loadClientes(): Promise<Cliente[]> {
   try {
     const data = await clienteRepository.fetchClientes();
     clientes.set(data);
-    
+    return data;
   } catch (error) {
     if (error instanceof Error) {
       console.error('Error al cargar clientes:', error.message);
     } else {
       console.error('Error desconocido:', error);
     }
+    return [];
   }
 }
 
